@@ -1,0 +1,1 @@
+!https://discordpy.readthedocs.io/en/stable/
