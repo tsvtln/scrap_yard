@@ -145,7 +145,10 @@ async def on_message(msg):
 
     if msg.content.startswith("$queue"):
         if msg.guild.id in song_queues and song_queue_name:
-            queue_list = '\n'.join(song_queue_name)
+            formatted_queue = []
+            for number_of_song_in_queue, song_name_in_queue in enumerate(song_queue_name, 1):
+                formatted_queue.append(f"{number_of_song_in_queue}. {song_name_in_queue}")
+            queue_list = '\n'.join(formatted_queue)
             await msg.channel.send(f"Плейлист:\n{queue_list}")
         else:
             await msg.channel.send('Нема плейлист')
@@ -174,5 +177,6 @@ def find_video_url(search_query):
 
         # Extract the video URL
         return video['webpage_url']
+
 
 client.run(key)
