@@ -156,6 +156,17 @@ async def on_message(msg):
         else:
             await msg.channel.send('Нема плейлист')
 
+    if msg.content.startswith("$commands"):
+        list_of_commands = [
+            '$play (url или име на песен) - Пуща песен',
+        '$pause - Палза',
+        '$stop - Спира песента и трие све',
+        '$resume - Пуща паузираната песен',
+        '$queue - Показва плейлиста'
+        ]
+        tp = '\n'.join(list_of_commands)
+        await msg.channel.send(f"Куманди:\n{tp}")
+
 
 def get_video_name(youtube_url):
     try:
