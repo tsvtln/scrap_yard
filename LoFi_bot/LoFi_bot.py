@@ -66,21 +66,27 @@ async def on_message(msg):
             elif url == 'sans':
                 url = 'https://www.youtube.com/watch?v=0FCvzsVlXpQ'
                 bot_chat = 'https://tenor.com/view/funny-dance-undertale-sans-gif-26048955'
+            elif url == 'ignf':
+                url = 'https://www.youtube.com/watch?v=yLnd3AYEd2k'
+                bot_chat = 'https://tenor.com/view/actorindie-worlds-smallest-violin-aww-violin-gif-13297153'
 
             # checking if guild has a queue
             if msg.guild.id not in song_queues:
                 song_queues[msg.guild.id] = []
 
-            # add song to the queue and its name into playlist names
-            song_queues[msg.guild.id].append(url)
-            song_queue_name.append(get_video_name(url))
             # notify in chat that song is added
-            await msg.channel.send(f"Добавена песен в плейлиста: {get_video_name(url)}")
+            if get_video_name(url) != 'Video title not available' and \
+                    get_video_name(url) != 'Error retrieving video title':
+                await msg.channel.send(f"Добавена песен в плейлиста: {get_video_name(url)}")
+                song_queues[msg.guild.id].append(url)
+                song_queue_name.append(get_video_name(url))
+            else:
+                await msg.channel.send('Пробуем при намирането на таз песен.')
 
             # if only 1 song, play it
-            if len(song_queues[msg.guild.id]) == 1:
+            if len(song_queues[msg.guild.id]) > 1:
                 loop = asyncio.get_event_loop()
-                data = await loop.run_in_executor(None, lambda: ytdl.extract_info(url, download=True))
+                data = await loop.run_in_executor(None, lambda: ytdl.extract_info(url, download=False))
 
                 song = data['url']
                 player = discord.FFmpegPCMAudio(song, **ffmpeg_options, executable="/usr/bin/ffmpeg")
@@ -129,7 +135,7 @@ async def on_message(msg):
             print(err)
 
     if msg.content.startswith("$queue"):
-        if msg.guild.id in song_queues:
+        if msg.guild.id in song_queues and song_queue_name:
             queue_list = '\n'.join(song_queue_name)
             await msg.channel.send(f"Плейлист:\n{queue_list}")
         else:
