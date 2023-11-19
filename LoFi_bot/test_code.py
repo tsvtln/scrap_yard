@@ -25,7 +25,7 @@ song_queues = {}
 song_queue_name = deque()
 voice_status = 'not connected'
 
-ffmpeg_options = {'options': '-vn -reconnect 1 -reconnect_streamed 1 -reconnect_delay_max 5'}
+ffmpeg_options = {'options': '-vn -reconnect 1 -reconnect_streamed 1 -reconnect_delay_max 15'}
 
 
 # runtime configuration
