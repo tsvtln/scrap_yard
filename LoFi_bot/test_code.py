@@ -6,9 +6,11 @@ to do:
 - implement interface to be displayed in discord
 """
 
-import discord
-import asyncio
-import yt_dlp
+import discord, asyncio, yt_dlp
+# import pafy, urllib.request, json, urllib, os
+# from discord.ext import commands
+# from discord_buttons_plugin import *
+# from pytube import Playlist
 from collections import deque
 
 with open('bot_keys', 'r') as f:
@@ -18,6 +20,7 @@ with open('bot_keys', 'r') as f:
 # lofi_bot.add_cog(help_cog(lofi_bot))
 
 client = discord.Client(command_prefix='$', intents=discord.Intents.all())
+# bot = commands.Bot(command_prefix='$', intents=discord.Intents.all())
 key = bot_token
 voice_clients = {}
 yt_dl_opts = {"format": 'bestaudio/best'}
@@ -56,10 +59,13 @@ async def on_message(msg):
 
         # play song
         try:
+            # test if there's more than 1 word to use in search query
             test_for_url = msg.content.split()
             if len(test_for_url) > 1:
                 test_for_url = deque(test_for_url[1:])
                 url = ' '.join(test_for_url)
+            else:
+                url = test_for_url[1]
 
             bot_chat = None
             if url == 'skakauec':
@@ -71,8 +77,8 @@ async def on_message(msg):
             elif url == 'ignf':
                 url = 'https://www.youtube.com/watch?v=yLnd3AYEd2k'
                 bot_chat = 'https://tenor.com/view/actorindie-worlds-smallest-violin-aww-violin-gif-13297153'
-            # elif 'http' not in url:
-            #     url = find_video_url(url)
+            elif 'http' not in url:
+                url = find_video_url(url)
 
             # checking if guild has a queue
             if msg.guild.id not in song_queues:
@@ -88,13 +94,14 @@ async def on_message(msg):
                 await msg.channel.send('Пробуем при намирането на таз песен.')
 
             # if only 1 song, play it
-            if len(song_queues[msg.guild.id]) > 1:
+            if len(song_queues[msg.guild.id]) >= 1:
                 loop = asyncio.get_event_loop()
                 data = await loop.run_in_executor(None, lambda: ytdl.extract_info(url, download=True))
 
                 song = data['url']
                 player = discord.FFmpegPCMAudio(song, **ffmpeg_options, executable="/usr/bin/ffmpeg")
 
+                # voice_client.play(player)
                 voice_clients[msg.guild.id].play(player)
 
                 if bot_chat:
@@ -165,6 +172,5 @@ def find_video_url(search_query):
 
         # Extract the video URL
         return video['webpage_url']
-
 
 client.run(key)
