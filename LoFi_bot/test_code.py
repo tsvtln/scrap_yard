@@ -6,11 +6,9 @@ to do:
 - implement interface to be displayed in discord
 """
 
-import discord, asyncio, yt_dlp
-# import pafy, urllib.request, json, urllib, os
-# from discord.ext import commands
-# from discord_buttons_plugin import *
-# from pytube import Playlist
+import discord
+import asyncio
+import yt_dlp
 from collections import deque
 
 with open('bot_keys', 'r') as f:
@@ -20,7 +18,6 @@ with open('bot_keys', 'r') as f:
 # lofi_bot.add_cog(help_cog(lofi_bot))
 
 client = discord.Client(command_prefix='$', intents=discord.Intents.all())
-# bot = commands.Bot(command_prefix='$', intents=discord.Intents.all())
 key = bot_token
 voice_clients = {}
 yt_dl_opts = {"format": 'bestaudio/best'}
@@ -28,6 +25,7 @@ ytdl = yt_dlp.YoutubeDL(yt_dl_opts)
 song_queues = {}
 song_queue_name = deque()
 voice_status = 'not connected'
+url = ''
 
 ffmpeg_options = {'options': '-vn -reconnect 1 -reconnect_streamed 1 -reconnect_delay_max 15'}
 
@@ -42,7 +40,7 @@ async def on_ready():
 # Receiver
 @client.event
 async def on_message(msg):
-    global voice_status
+    global voice_status, url
     if msg.content.startswith('$play'):
 
         # create voice client connection
@@ -58,7 +56,11 @@ async def on_message(msg):
 
         # play song
         try:
-            url = msg.content.split()[1]
+            test_for_url = msg.content.split()
+            if len(test_for_url) > 1:
+                test_for_url = deque(test_for_url[1:])
+                url = ' '.join(test_for_url)
+
             bot_chat = None
             if url == 'skakauec':
                 url = 'https://www.youtube.com/watch?v=pq3C-UE6RE0'
@@ -70,26 +72,13 @@ async def on_message(msg):
                 url = 'https://www.youtube.com/watch?v=yLnd3AYEd2k'
                 bot_chat = 'https://tenor.com/view/actorindie-worlds-smallest-violin-aww-violin-gif-13297153'
             # elif 'http' not in url:
-            #     async def search_and_play(query):
-            #         ydl_opts = {
-            #             'query': query,
-            #             'max_results': 1,
-            #             'format': 'bestaudio/best',
-            #         }
-            #         with yt_dlp.YoutubeDL(ydl_opts) as ydl:
-            #             results = ydl.extract_info(query, download=False)
-            #
-            #             if 'entries' in results and results['entries']:
-            #                 entry = results['entries'][0]
-            #                 url = entry['url']
-            #                 return url
-            #     await search_and_play(url)
+            #     url = find_video_url(url)
 
             # checking if guild has a queue
             if msg.guild.id not in song_queues:
                 song_queues[msg.guild.id] = []
 
-            # notify in chat that song is added
+            # notify in chat that the song is added
             if get_video_name(url) != 'Video title not available' and \
                     get_video_name(url) != 'Error retrieving video title':
                 await msg.channel.send(f"Добавена песен в плейлиста: {get_video_name(url)}")
@@ -101,21 +90,17 @@ async def on_message(msg):
             # if only 1 song, play it
             if len(song_queues[msg.guild.id]) > 1:
                 loop = asyncio.get_event_loop()
-                data = await loop.run_in_executor(None, lambda: ytdl.extract_info(url, download=False))
+                data = await loop.run_in_executor(None, lambda: ytdl.extract_info(url, download=True))
 
                 song = data['url']
                 player = discord.FFmpegPCMAudio(song, **ffmpeg_options, executable="/usr/bin/ffmpeg")
 
-                # voice_client.play(player)
                 voice_clients[msg.guild.id].play(player)
 
                 if bot_chat:
                     await msg.channel.send(bot_chat)
 
                 await client.change_presence(activity=discord.Game(name=get_video_name(url)))
-
-                # song_queues[msg.guild.id].popleft()
-                # song_queue_name.popleft()
 
         except yt_dlp.DownloadError:
             await msg.channel.send(f"Нема такова '{str(url)}'")
@@ -168,6 +153,18 @@ def get_video_name(youtube_url):
     except yt_dlp.DownloadError as e:
         print(f"Error: {e}")
         return "Error retrieving video title"
+
+
+def find_video_url(search_query):
+    # Create a YDL object with some options
+    ydl_opts = yt_dl_opts
+
+    with yt_dlp.YoutubeDL(ydl_opts) as ydl:
+        # Search for the video by name
+        video = ydl.extract_info(f"ytsearch:{search_query}", ie_key='YoutubeSearch')['entries'][0]
+
+        # Extract the video URL
+        return video['webpage_url']
 
 
 client.run(key)
