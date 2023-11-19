@@ -6,18 +6,22 @@ to do:
 - implement interface to be displayed in discord
 """
 
-import discord, asyncio, yt_dlp, pafy, urllib.request, json, urllib, os
-from discord.ext import commands
-from discord_buttons_plugin import *
-from pytube import Playlist
+import discord, asyncio, yt_dlp
+# import pafy, urllib.request, json, urllib, os
+# from discord.ext import commands
+# from discord_buttons_plugin import *
+# from pytube import Playlist
 from collections import deque
+
+with open('bot_keys', 'r') as f:
+    bot_token = f.read().strip()
 
 # lofi_bot = commands.Bot(command_prefix='$', intents=discord.Intents.all())
 # lofi_bot.add_cog(help_cog(lofi_bot))
 
 client = discord.Client(command_prefix='$', intents=discord.Intents.all())
 # bot = commands.Bot(command_prefix='$', intents=discord.Intents.all())
-key = 'botkey'
+key = bot_token
 voice_clients = {}
 yt_dl_opts = {"format": 'bestaudio/best'}
 ytdl = yt_dlp.YoutubeDL(yt_dl_opts)
@@ -25,7 +29,7 @@ song_queues = {}
 song_queue_name = deque()
 voice_status = 'not connected'
 
-ffmpeg_options = {'options': '-vn -reconnect 1 -reconnect_streamed 1 -reconnect_delay_max 5'}
+ffmpeg_options = {'options': '-vn -reconnect 1 -reconnect_streamed 1 -reconnect_delay_max 15'}
 
 
 # runtime configuration
@@ -86,6 +90,8 @@ async def on_message(msg):
 
                 if bot_chat:
                     await msg.channel.send(bot_chat)
+
+                await client.change_presence(activity=discord.Game(name=get_video_name(url)))
 
                 # song_queues[msg.guild.id].popleft()
                 # song_queue_name.popleft()
