@@ -1,6 +1,12 @@
 """
 this works and can play music, needs good upload speed of at least 25Mbps
 
+dependencies:
+discord.py
+asyncio
+yt_dlp
+ffmpeg
+
 to do:
 - implement buttons
 
