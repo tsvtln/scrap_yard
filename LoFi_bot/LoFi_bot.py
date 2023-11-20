@@ -21,24 +21,26 @@ import asyncio
 import yt_dlp
 from collections import deque
 
+# store the bot token in a bot_keys file as plain text
 with open('bot_keys', 'r') as f:
     bot_token = f.read().strip()
-
-client = discord.Client(command_prefix='$', intents=discord.Intents.all())
 key = bot_token
+
+# vars
 voice_clients = {}
-yt_dl_opts = {"format": 'bestaudio/best'}
-ytdl = yt_dlp.YoutubeDL(yt_dl_opts)
 song_queues = {}
+yt_dl_opts = {"format": 'bestaudio/best'}
 song_queue_name = deque()
+ytdl = yt_dlp.YoutubeDL(yt_dl_opts)
 voice_status = 'not connected'
 url = ''
 bot_chat = None
-
+client = discord.Client(command_prefix='$', intents=discord.Intents.all())
 ffmpeg_options = {'options': '-vn -reconnect 1 -reconnect_streamed 1 -reconnect_delay_max 15'}
 
 
-async def play_next_song(guild_id, msg):
+# queue handler
+async def play_next_song(guild_id, msg):  # handles playing songs from the queue
     global bot_chat
     if guild_id in song_queues and song_queues[guild_id]:
         next_url = song_queues[guild_id][0]
@@ -64,18 +66,19 @@ async def play_next_song(guild_id, msg):
 
 
 @client.event
-async def on_voice_state_update(member, before, after):
+async def on_voice_state_update(member, after):  # checking voice state and updates accordingly
     if after.channel is None and voice_clients.get(member.guild.id) is not None:
         if not voice_clients[member.guild.id].is_playing() and song_queues.get(member.guild.id):
             await play_next_song(member.guild.id, None)
 
 
 @client.event
-async def on_ready():
+async def on_ready():  # verifies that the bot is started and sets a bot status
     print(f"Bot is ready")
     await client.change_presence(activity=discord.Game(name='цигу мигу чакарака'))
 
 
+# main handler
 @client.event
 async def on_message(msg):
     global voice_status, url
@@ -127,7 +130,7 @@ async def on_message(msg):
             await voice_clients[msg.guild.id].disconnect()
             voice_status = 'not connected'
         except Exception as err:
-            await msg.channel.send("ГРЕДА")
+            await msg.channel.send("ГРЕДА")  # if this is printed in discord, something is broken
             await voice_clients[msg.guild.id].disconnect()
             voice_status = 'not connected'
             print(err)
@@ -165,16 +168,17 @@ async def on_message(msg):
     if msg.content.startswith("$commands"):
         list_of_commands = [
             '$play (url или име на песен) - Пуща песен',
-        '$pause - Палза',
-        '$stop - Спира песента и трие све',
-        '$resume - Пуща паузираната песен',
-        '$queue - Показва плейлиста'
+            '$pause - Палза',
+            '$stop - Спира песента и трие све',
+            '$resume - Пуща паузираната песен',
+            '$queue - Показва плейлиста'
         ]
         tp = '\n'.join(list_of_commands)
         await msg.channel.send(f"Куманди:\n{tp}")
 
 
-def get_video_name(youtube_url):
+# helper functions
+def get_video_name(youtube_url):  # gets the name of a video/song
     try:
         with yt_dlp.YoutubeDL({}) as ydl:
             result = ydl.extract_info(youtube_url, download=False)
@@ -187,7 +191,7 @@ def get_video_name(youtube_url):
         return "Error retrieving video title"
 
 
-def find_video_url(search_query):
+def find_video_url(search_query):  # gets the pure url to a video, based only a search query
     ydl_opts = yt_dl_opts
     with yt_dlp.YoutubeDL(ydl_opts) as ydl:
         video = ydl.extract_info(f"ytsearch:{search_query}", ie_key='YoutubeSearch')['entries'][0]
