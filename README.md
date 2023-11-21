@@ -1,1 +1,6 @@
-!https://discordpy.readthedocs.io/en/stable/
+* Dependencies
+
+discord.py
+asyncio
+yt_dlp
+ffmpeg
