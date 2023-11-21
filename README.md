@@ -1,6 +1,1 @@
-## Dependencies:
-
-- discord.py
-- asyncio
-- yt_dlp
-- ffmpeg
+## scrap yard
