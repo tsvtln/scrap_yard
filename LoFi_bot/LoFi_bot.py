@@ -1,16 +1,16 @@
 """
 this works and can play music, needs good upload speed of at least 25Mbps
 
-dependencies:
+Dependencies:
 discord.py
 asyncio
 yt_dlp
 ffmpeg
 
-to do:
+To do:
 - implement buttons
 
-done:
+Done:
 - implemented search function
 - implemented queue's
 - implemented text interface to be displayed in discord of what is currently playing
