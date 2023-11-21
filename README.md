@@ -1,5 +1,6 @@
-*Dependencies:
-*discord.py
-*asyncio
-*yt_dlp
-*ffmpeg
+## Dependencies:
+
+- discord.py
+- asyncio
+- yt_dlp
+- ffmpeg
