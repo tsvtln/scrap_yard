@@ -203,7 +203,7 @@ def find_video_url(search_query):  # gets the pure url to a video, based only a 
 
 
 class NotInVoiceChannel(Exception):
-    """A custom exception class."""
+    """A custom exception class to raise an error if user is not in a voice channel."""
 
     def __init__(self, message="User not in voice channel."):
         self.message = message
