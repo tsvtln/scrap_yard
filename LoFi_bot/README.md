@@ -35,4 +35,8 @@
     2. Store your Discord bot token in a file named bot_keys.
     3. Run the script, and the bot will be ready to join voice channels and play music.
 
+## Notes
+    The bot currently will download the video in webm format 251, which helps if you have slower connection.
+    To disable this change {'download': True} to False
+
 **Feel free to explore and modify the code based on your preferences and requirements. If you encounter any issues or have suggestions, please feel free to contribute or open an issue.**
