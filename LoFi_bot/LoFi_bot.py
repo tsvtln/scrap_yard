@@ -9,6 +9,7 @@ ffmpeg
 
 To do:
 - implement buttons
+- implement next song
 
 Done:
 - implemented search function
@@ -54,7 +55,7 @@ async def play_next_song(guild_id, msg):  # handles playing songs from the queue
         if bot_chat:
             await msg.channel.send(bot_chat)
         else:
-            await msg.channel.send(get_video_name(next_url))
+            await msg.channel.send(f"Пущам: {get_video_name(next_url)}")
         song_queues[guild_id].pop(0)
         song_queue_name.popleft()
         next_song = await asyncio.to_thread(ytdl.extract_info, next_url, {'download': True})
@@ -66,7 +67,7 @@ async def play_next_song(guild_id, msg):  # handles playing songs from the queue
 
 
 @client.event
-async def on_voice_state_update(member, after):  # checking voice state and updates accordingly
+async def on_voice_state_update(member, before, after):  # checking voice state and updates accordingly
     if after.channel is None and voice_clients.get(member.guild.id) is not None:
         if not voice_clients[member.guild.id].is_playing() and song_queues.get(member.guild.id):
             await play_next_song(member.guild.id, None)
@@ -93,6 +94,7 @@ async def on_message(msg):
                 await msg.channel.send('Влез в music канала.')
                 voice_status = 'not connected'
                 print(err)
+                raise NotInVoiceChannel
 
         try:
             test_for_url = msg.content.split()
@@ -196,6 +198,14 @@ def find_video_url(search_query):  # gets the pure url to a video, based only a 
     with yt_dlp.YoutubeDL(ydl_opts) as ydl:
         video = ydl.extract_info(f"ytsearch:{search_query}", ie_key='YoutubeSearch')['entries'][0]
         return video['webpage_url']
+
+
+class NotInVoiceChannel(Exception):
+    """A custom exception class."""
+
+    def __init__(self, message="User not in voice channel."):
+        self.message = message
+        super().__init__(self.message)
 
 
 client.run(key)
