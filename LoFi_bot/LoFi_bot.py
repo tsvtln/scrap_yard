@@ -51,6 +51,8 @@ async def play_next_song(guild_id, msg):  # handles playing songs from the queue
             bot_chat = 'https://tenor.com/view/actorindie-worlds-smallest-violin-aww-violin-gif-13297153'
         elif 'hipodil' in get_video_name(next_url).lower():
             bot_chat = 'https://tenor.com/view/cat-music-listening-gif-18335467'
+        else:
+            bot_chat = ''
 
         if bot_chat:
             await msg.channel.send(bot_chat)
