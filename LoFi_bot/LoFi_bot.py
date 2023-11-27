@@ -15,12 +15,17 @@ Done:
 - implemented search function
 - implemented queue's
 - implemented text interface to be displayed in discord of what is currently playing
+- clean up of downloaded locally files
+- improved console logging
 """
 
 import discord
 import asyncio
 import yt_dlp
 from collections import deque
+import os
+import glob
+import sys
 
 # store the bot token in a bot_keys file as plain text
 with open('bot_keys', 'r') as f:
@@ -30,14 +35,28 @@ key = bot_token
 # vars
 voice_clients = {}
 song_queues = {}
-yt_dl_opts = {"format": 'bestaudio/best'}
+yt_dl_opts = {"format": 'bestaudio/best',
+              "restrictfilenames": True,
+              "retry_max": "auto",
+              "noplaylist": True,
+              "nocheckcertificate": True,
+              "logtostderr": False,
+              "quiet": True,
+              "no_warnings": True,
+              "default_search": "auto",
+              "external_downloader_args": ["-loglevel", "panic"],
+              "verbose": False
+              }
+ffmpeg_options = {
+    'options': '-vn -reconnect 1 -reconnect_streamed 1 -reconnect_delay_max 15'
+}
 song_queue_name = deque()
 ytdl = yt_dlp.YoutubeDL(yt_dl_opts)
 voice_status = 'not connected'
 url = ''
 bot_chat = None
 client = discord.Client(command_prefix='$', intents=discord.Intents.all())
-ffmpeg_options = {'options': '-vn -reconnect 1 -reconnect_streamed 1 -reconnect_delay_max 15'}
+files_to_clean = []
 
 
 # queue handler
@@ -58,8 +77,13 @@ async def play_next_song(guild_id, msg):  # handles playing songs from the queue
             await msg.channel.send(bot_chat)
         else:
             await msg.channel.send(f"Пущам: {get_video_name(next_url)}")
+        # clean up
         song_queues[guild_id].pop(0)
         song_queue_name.popleft()
+        find_files_to_clean()
+        if len(files_to_clean) >= 10:
+            clean_files()
+
         next_song = await asyncio.to_thread(ytdl.extract_info, next_url, {'download': True})
         next_audio = discord.FFmpegPCMAudio(next_song['url'], **ffmpeg_options, executable="/usr/bin/ffmpeg")
         voice_clients[guild_id].play(next_audio,
@@ -210,4 +234,30 @@ class NotInVoiceChannel(Exception):
         super().__init__(self.message)
 
 
+def find_files_to_clean():
+    """ collects a list of files to be cleaned"""
+    global files_to_clean
+    files_to_clean.clear()
+    pattern = os.path.join('.', '*.webm')
+    files_to_clean = glob.glob(pattern)
+
+
+def clean_files():
+    global files_to_clean
+    for file in files_to_clean:
+        os.remove(file)
+        print(f"Cleared {file} from local repo")
+
+
+class SuppressYouTubeMessages:
+    """ redirects [youtube] blablabla messages to dev/null"""
+    def write(self, message):
+        if '[youtube]' not in message:
+            sys.__stdout__.write(message)
+
+    def flush(self):
+        pass
+
+
+sys.stdout = SuppressYouTubeMessages()
 client.run(key)
