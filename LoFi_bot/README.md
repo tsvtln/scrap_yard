@@ -39,4 +39,8 @@
     The bot currently will download the video in webm format 251, which helps if you have slower connection.
     To disable this change {'download': True} to False
 
-**Feel free to explore and modify the code based on your preferences and requirements. If you encounter any issues or have suggestions, please feel free to contribute or open an issue.**
+**Feel free to explore and modify the code based on your preferences and requirements. 
+If you encounter any issues or have suggestions, please feel free to contribute or open an issue.**
+
+
+https://discord.com/oauth2/authorize?client_id=1174035680058421248&permissions=8&scope=bot%20applications.commands
