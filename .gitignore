@@ -160,3 +160,4 @@ cython_debug/
 #.idea/
 *.webm
 LoFi_bot/bot_keys
+*.opus
